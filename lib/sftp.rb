@@ -18,7 +18,7 @@ class FileLogger
     end
     name = DateTime.now.strftime('%d-%m-%Y')
     filename = "#{Dir.pwd}/log/#{name}.log"
-    file = File.open(filename, 'w+')
+    file = File.exists?(filename) ? File.open(filename, 'a+') : File.new(filename, 'w')
 
     @logger = Logger.new(file, 'daily')
     @logger.datetime_format = '%d-%M-%Y %H:%M%:%S'
@@ -47,7 +47,8 @@ class FileTransfer
     @host = host
     @username = ENV['USERNAME']
     @password = ENV['PASSWORD']
-    @sftp = Net::SFTP.start(host, @username, password: @password)
+    @port = ENV['PORT']
+    @sftp = Net::SFTP.start(host, @username, password: @password, port: @port)
   end
 
   private
@@ -57,7 +58,7 @@ class FileTransfer
 
     handle(operation, args) do
       logger.log("Started operation #{operation}")
-      sftp.send(operation, args) do |response|
+      sftp.send(operation, *args) do |response|
         logger.log "operation #{operation} finished with response: #{response.to_s} "
       end
     end
@@ -73,7 +74,7 @@ class FileTransfer
       elsif e.code == 2 && caller == 'opendir!'
         raise FileTransferError, "Folder not found on #{@host}"
       elsif e.code == 3
-        raise FileTransferError, "Permission denied to dir #{args[0]}"
+        raise FileTransferError, "Permission denied to dir"
       else
         raise FileTransferError, "Unknown error #{e.code} - #{e.message}"
       end

@@ -7,7 +7,11 @@ describe 'FileTransfer' do
   let(:subject){ FileTransfer.new('localhost')}
 
   def path dir
-    "#{root}/tmp/#{dir}"
+    "upload/#{dir}"
+  end
+
+  def root_path dir
+    Dir.pwd + "/data/intuity/upload/" + dir
   end
 
   context 'opendir' do
@@ -33,19 +37,30 @@ describe 'FileTransfer' do
 
 
     it 'has response forbidden' do
-      Dir.mkdir(path('secret'), 0000) unless Dir.exists? path('secret')
+      Dir.mkdir(root_path('secret'), 0000) unless Dir.exists? root_path('secret')
 
       expect{
         subject.opendir!(path('secret'))
       }.to raise_error(FileTransferError, /Permission denied to dir/)
 
-      Dir.rmdir path('secret') if Dir.exists? path('secret')
+      Dir.rmdir root_path('secret') if Dir.exists? root_path('secret')
     end
   end
 
-  context 'logging' do
-    xit 'creates log with today date' do
-      #File.open(root + '/log/' + today + '.log')
+  context 'upload' do
+    before(:each) do
+      FileUtils.rm_r Dir.glob(Dir.pwd + '/tmp/*')
+    end
+
+    it 'has response ok' do
+      FileUtils.cd(root + '/tmp'){ FileUtils.touch 'foo.txt' }
+      local_path = "#{root}/tmp/foo.txt"
+      remote_path = "/upload/foo.txt"
+
+      subject.upload!(local_path, remote_path) do |response|
+        expect(response.ok?).to be_truthy
+      end
+      expect(subject.dir.glob('/upload', '*.txt').first.name).to eq('foo.txt')
     end
   end
 end

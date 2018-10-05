@@ -1,0 +1,14 @@
+intuity:
+    image: atmoz/sftp
+    volumes:
+        - ./data/intuity/upload:/home/intuity/upload
+    ports:
+        - "7777:22"
+    command: intuity:pass:1001
+intervent:
+    image: atmoz/sftp
+    volumes:
+        - ./data/intervent/upload:/home/intervent/upload
+    ports:
+        - "8888:22"
+    command: intervent:pass:1001
