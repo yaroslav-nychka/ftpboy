@@ -39,16 +39,17 @@ class FileLogger
   end
 end
 
-class FileTransfer
+class FTPSource
   attr_reader :sftp, :logger
 
-  def initialize(host)
+  def initialize(name, options = {})
+    @name = name
     @logger = FileLogger.new
-    @host = host
-    @username = ENV['USERNAME']
-    @password = ENV['PASSWORD']
-    @port = ENV['PORT']
-    @sftp = Net::SFTP.start(host, @username, password: @password, port: @port)
+    @host = options[:host] || 'localhost'
+    @username = options[:username] || ENV['USERNAME']
+    @password = options[:password] || ENV['PASSWORD']
+    @port = options[:port] || ENV['PORT']
+    @sftp = Net::SFTP.start(@host, @username, password: @password, port: @port)
   end
 
   private

@@ -1,21 +1,22 @@
-require_relative '../lib/sftp'
+require_relative '../lib/ftp_source'
 
-describe 'FileTransfer' do
+describe 'FTPSource' do
 
   let(:today){ DateTime.now.strftime('%d/%m/%Y') }
   let(:root){ Dir.pwd }
-  let(:subject){ FileTransfer.new('localhost')}
+  let(:subject){ FTPSource.new('ftp-temp')}
 
   def path dir
-    "upload/#{dir}"
+    "/tmp/#{dir}"
   end
 
   def root_path dir
-    Dir.pwd + "/data/intuity/upload/" + dir
+    Dir.pwd + "/data/intuity/tmp/" + dir
   end
 
   context 'opendir' do
     before(:each) do
+      #byebug
       subject.mkdir!(path 'bar')
     end
 
@@ -55,12 +56,12 @@ describe 'FileTransfer' do
     it 'has response ok' do
       FileUtils.cd(root + '/tmp'){ FileUtils.touch 'foo.txt' }
       local_path = "#{root}/tmp/foo.txt"
-      remote_path = "/upload/foo.txt"
+      remote_path = "/tmp/foo.txt"
 
       subject.upload!(local_path, remote_path) do |response|
         expect(response.ok?).to be_truthy
       end
-      expect(subject.dir.glob('/upload', '*.txt').first.name).to eq('foo.txt')
+      expect(subject.dir.glob('/tmp', '*.txt').first.name).to eq('foo.txt')
     end
   end
 end
