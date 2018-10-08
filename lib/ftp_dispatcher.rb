@@ -1,3 +1,4 @@
+require_relative 'ftp_source'
 
 class FTPDispatcher
   attr_reader :sources
