@@ -16,7 +16,6 @@ describe 'FTPSource' do
 
   context 'opendir' do
     before(:each) do
-      #byebug
       subject.mkdir!(path 'bar')
     end
 
@@ -62,6 +61,42 @@ describe 'FTPSource' do
         expect(response.ok?).to be_truthy
       end
       expect(subject.dir.glob('/tmp', '*.txt').first.name).to eq('foo.txt')
+    end
+  end
+
+  context 'setup' do
+    before(:each) do
+      subject.setup!
+    end
+
+    it 'has correct schema' do
+      files = subject.dir.glob('/data', '*')
+      expect(files.map(&:name)).to match_array(%w(to from history))
+    end
+  end
+
+  context 'new data availability' do
+    let(:ftp_path){  Dir.pwd + '/data/intuity/data/from/'}
+
+    before(:each) do
+      subject.setup!
+    end
+
+    after(:each) do
+      FileUtils.rm_r Dir.glob(ftp_path + '*')
+    end
+
+    it 'has no new files' do
+      expect(subject.new_data?).to be_falsey
+    end
+
+    it 'has 2 files' do
+      FileUtils.cd ftp_path do
+        FileUtils.touch 'test1.txt'
+        FileUtils.touch 'test2.txt'
+      end
+
+      expect(subject.new_data?).to eq(2)
     end
   end
 end

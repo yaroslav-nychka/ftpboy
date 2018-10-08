@@ -23,7 +23,7 @@ class FileLogger
     @logger = Logger.new(file, 'daily')
     @logger.datetime_format = '%d-%M-%Y %H:%M%:%S'
     @logger.formatter = formatter
-    @logger.progname = 'INTERVENT_FTP'
+    @logger.progname = options[:progname] || 'UNKNOWN_FTP'
   end
 
   def <<(msg)
@@ -44,12 +44,23 @@ class FTPSource
 
   def initialize(name, options = {})
     @name = name
-    @logger = FileLogger.new
+    @logger = FileLogger.new(progname: name)
     @host = options[:host] || 'localhost'
     @username = options[:username] || ENV['USERNAME']
     @password = options[:password] || ENV['PASSWORD']
     @port = options[:port] || ENV['PORT']
     @sftp = Net::SFTP.start(@host, @username, password: @password, port: @port)
+  end
+
+  def setup!
+    sftp.mkdir!('/data/from') rescue nil
+    sftp.mkdir!('/data/to') rescue nil
+    sftp.mkdir!('/data/history') rescue nil
+  end
+
+  def new_data?
+    files = sftp.dir.glob('/data/from', '*')
+    files.length > 0 ? files.length : false
   end
 
   private
