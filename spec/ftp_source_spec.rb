@@ -4,7 +4,15 @@ describe 'FTPSource' do
 
   let(:today){ DateTime.now.strftime('%d/%m/%Y') }
   let(:root){ Dir.pwd }
-  let(:subject){ FTPSource.new('ftp-temp')}
+  let(:options) do
+    {
+      host: ENV['INTUITY_FTP_HOST'],
+      username: ENV['INTUITY_FTP_USERNAME'],
+      password: ENV['INTUITY_FTP_PASSWORD'],
+      port: ENV['INTUITY_FTP_PORT']
+    }
+  end
+  let(:subject){ Validic::FTPSource.new('intuity-test', options)}
 
   def path dir
     "/tmp/#{dir}"
@@ -16,11 +24,11 @@ describe 'FTPSource' do
 
   context 'opendir' do
     before(:each) do
-      subject.mkdir!(path 'bar')
+      FileUtils.mkdir "#{Dir.pwd}/data/intuity/tmp/bar"
     end
 
     after(:each) do
-      subject.rmdir!(path 'bar') rescue nil
+      FileUtils.rmdir "#{Dir.pwd}/data/intuity/tmp/bar"
     end
 
     it 'has response ok' do
@@ -32,7 +40,7 @@ describe 'FTPSource' do
     it 'has response not found' do
       expect{
         subject.opendir!(path 'dir404')
-      }.to raise_error(FileTransferError, /Folder not found/)
+      }.to raise_error(Validic::FileTransferError, /Folder not found/)
     end
 
 
@@ -41,7 +49,7 @@ describe 'FTPSource' do
 
       expect{
         subject.opendir!(path('secret'))
-      }.to raise_error(FileTransferError, /Permission denied to dir/)
+      }.to raise_error(Validic::FileTransferError, /Permission denied to dir/)
 
       Dir.rmdir root_path('secret') if Dir.exists? root_path('secret')
     end

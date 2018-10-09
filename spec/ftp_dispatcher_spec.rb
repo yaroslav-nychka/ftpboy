@@ -3,9 +3,9 @@ require_relative '../lib/ftp_dispatcher'
 
 describe 'FTPDispatcher' do
 
-  let(:subject){ FTPDispatcher.new }
-  let(:intervent){ FTPSource.new('intervent', username: 'intervent', password: 'pass', port: '8888')}
-  let(:intuity){ FTPSource.new('intuity', username: 'intuity', password: 'pass', port: '7777')}
+  let(:subject){ Validic::FTPDispatcher.new }
+  let(:intervent){ subject.sources[:intervent] }
+  let(:intuity){ subject.sources[:intuity] }
 
   let(:intervent_data_path){ Dir.pwd + '/data/intervent/data'}
   let(:intuity_data_path){ Dir.pwd + '/data/intuity/data/'}
@@ -20,15 +20,18 @@ describe 'FTPDispatcher' do
     clean
   end
 
-  it 'dispatches file from one ftp source to another' do
+  context 'handle' do
+    it 'transfers successfully files from one ftp to another' do
+      FileUtils.cd "#{intervent_data_path}/from" do
+        3.times{ |n| FileUtils.touch "test_#{n}.txt" }
+      end
 
-    FileUtils.cd "#{intervent_data_path}/from" do
-      3.times{ |n| FileUtils.touch "test_#{n}.txt" }
+      subject.handle :intervent, :intuity
+
+      expect(intervent.dir.glob('/data/from', '*').length).to eq(0)
+      expect(intervent.dir.glob('/data/history', '*').length).to eq(3)
+      expect(intuity.dir.glob('/data/to', '*').length).to eq(3)
     end
-
-    subject.handle :intervent, :intuity
-
-    expect(intuity.dir.glob('/data/to', '*').length).to eq(3)
   end
 
   private
