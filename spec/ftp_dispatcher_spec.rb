@@ -10,14 +10,15 @@ describe 'FTPDispatcher' do
   let(:intervent_data_path){ Dir.pwd + '/data/intervent/data'}
   let(:intuity_data_path){ Dir.pwd + '/data/intuity/data/'}
 
+  around(:each) do |each|
+    DataCleaner.clean
+    each.run
+    DataCleaner.clean
+  end
+
   before(:each) do
     intervent.setup!
     intuity.setup!
-    clean
-  end
-
-  after(:each) do
-    clean
   end
 
   context 'handle' do
@@ -32,20 +33,5 @@ describe 'FTPDispatcher' do
       expect(intervent.dir.glob('/data/history', '*').length).to eq(3)
       expect(intuity.dir.glob('/data/to', '*').length).to eq(3)
     end
-  end
-
-  private
-
-  def clean
-    %W(
-      #{Dir.pwd}/data/intervent/data/from/
-      #{Dir.pwd}/data/intervent/data/to/
-      #{Dir.pwd}/data/intuity/data/from/
-      #{Dir.pwd}/data/intuity/data/to/
-      #{Dir.pwd}/data/intuity/data/history/
-      #{Dir.pwd}/data/intuity/tmp/
-      #{Dir.pwd}/data/intervent/tmp/
-      #{Dir.pwd}/data/intervent/data/history/
-    ).map {|path| FileUtils.rm_r Dir.glob(path + '*')}
   end
 end
