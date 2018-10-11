@@ -19,17 +19,13 @@ module Validic
       source_from = sources[from]
       source_to = sources[to]
 
-      source_from.dir.glob('/data/from', '**/*.*').map do |file|
-        path = FilePathBuilder.new(file)
-        byebug if file.name.split('/').length > 1
-        # 1. Download file to temp folder
-        source_from.download! path.from, path.tmp
-        # 2. Upload tempfile
-        source_to.upload! path.tmp, path.to
-        # 3. Move file to History folder
-        source_from.rename! path.from, path.archive
-        # 4. Remove tempfile
-        FileUtils.rm path.tmp
+      source_from.dir.glob('/data/from', '**/*.*').map do |sftp_file|
+        file = FilePathBuilder.new(sftp_file)
+        #byebug
+        source_from.download! file                   # 1. Download file to temp folder
+        source_to.upload! file                       # 2. Upload tempfile
+        source_from.archive! file                    # 3. Move file to History folder
+        #FileUtils.rm file.tmp                       # 4. Remove tempfile
       end
     end
 

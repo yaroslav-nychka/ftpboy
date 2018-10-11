@@ -38,15 +38,15 @@ module Validic
     end
 
     def to
-      @to ||= "#{receiver_dir}/#{short}"
+      @to ||= "#{receiver_dir}/#{full}"
     end
 
     def from
-      @from ||= "#{sender_dir}/#{short}"
+      @from ||= "#{sender_dir}/#{full}"
     end
 
     def archive
-      @archive ||= "/data/history/#{archived_short}"
+      @archive ||= "#{archive_dir}/#{dirs.join('/')}/#{archived_short}"
     end
 
     def archived_short
@@ -54,7 +54,17 @@ module Validic
     end
 
     def tmp
-      @tmp ||= "#{tmpdir}/#{short}"
+      @tmp ||= "#{tmpdir}/#{full}"
+    end
+
+    def tmp!
+      tmp_path = "#{tmpdir}/#{dirs.join('/')}"
+      FileUtils.mkdir_p tmp_path unless Dir.exists? tmp_path
+      tmp
+    end
+
+    def archive_dir
+      @archive_dir ||= '/data/history'
     end
 
     def sender_dir

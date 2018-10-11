@@ -1,4 +1,5 @@
 require_relative '../lib/ftp_source'
+require_relative '../lib/file_path_builder'
 
 describe 'FTPSource' do
 
@@ -12,6 +13,8 @@ describe 'FTPSource' do
     }
   end
   let(:subject){ Validic::FTPSource.new('intuity', options)}
+  let(:filename){ 'Employee_1/claims/cla_01.ms' }
+  let(:file) { Validic::FilePathBuilder.new double(name: filename) }
 
   around(:each) do |each|
     DataCleaner.clean
@@ -47,20 +50,13 @@ describe 'FTPSource' do
   end
 
   context 'upload' do
-    before(:each) do
-      DataCleaner.clean
-    end
+    it 'uploads file saving folder structure' do
+      DataCreator.mkdir 'tmp/Employee_1/claims'
+      DataCreator.touch 'tmp/' + filename
 
-    it 'has response ok' do
-      DataCreator.touch 'tmp/foo.txt'
+      subject.upload! file
 
-      local_path = "#{Dir.pwd}/tmp/foo.txt"
-      remote_path = "/tmp/foo.txt"
-
-      subject.upload!(local_path, remote_path) do |response|
-        expect(response.ok?).to be_truthy
-      end
-      expect(subject.dir.glob('/tmp', '*.txt').first.name).to eq('foo.txt')
+      expect(subject.dir.glob('/data/to', '**/*.*').map(&:name)).to match_array([filename])
     end
   end
 
@@ -75,19 +71,14 @@ describe 'FTPSource' do
     end
   end
 
-  context 'new_data?' do
-    before(:each) do
-      subject.setup!
-    end
+  context 'download' do
+    it 'downloads file to tmp' do
+      DataCreator.mkdir("data/intuity/data/from/Employee_1/claims")
+      DataCreator.touch("data/intuity/data/from/#{filename}")
 
-    it 'has no new files' do
-      expect(subject.new_data?).to be_falsey
-    end
+      subject.download! file
 
-    it 'has 2 files' do
-      2.times{ |n| DataCreator.touch "data/intuity/data/from/test#{n}.txt"}
-
-      expect(subject.new_data?).to eq(2)
+      expect(File.exists?"#{Dir.pwd}/tmp/#{filename}").to be_truthy
     end
   end
 end

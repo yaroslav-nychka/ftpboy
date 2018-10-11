@@ -23,4 +23,21 @@ describe 'FilePathBuilder' do
   it '#dirs' do
     expect(subject.dirs).to match_array(['Employee_1', 'claims'])
   end
+
+  it '#tmp' do
+    expect(subject.tmp!).to eq("#{subject.tmpdir}/#{filename}")
+  end
+
+  it '#tmp!' do
+    subject.tmp!
+    expect(Dir.exists? "#{subject.tmpdir}/Employee_1/claims").to be_truthy
+  end
+
+  it '#from' do
+    expect(subject.from).to eq("#{subject.sender_dir}/#{filename}")
+  end
+
+  it '#to' do
+    expect(subject.to).to eq("#{subject.receiver_dir}/#{filename}")
+  end
 end

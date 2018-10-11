@@ -2,6 +2,7 @@ require 'net/sftp'
 require 'byebug'
 require 'logger'
 require 'date'
+require_relative '../lib/file_path_builder'
 
 module Validic
   class FileTransferError < StandardError
@@ -52,13 +53,34 @@ module Validic
     def setup!
       %w(from to history).map do |dir|
         path = "#{Dir.pwd}/data/#{@name}/data/#{dir}"
-        FileUtils.mkdir(path) unless Dir.exists?(path)
+        FileUtils.mkdir(path, mode: 0777) unless Dir.exists?(path)
       end
     end
 
-    def new_data?
-      files = sftp.dir.glob('/data/from', '*')
-      files.length > 0 ? files.length : false
+    def mkdir_p!(file, root_path)
+      path = file.send(root_path)
+      file.dirs.map do |dir|
+        path = "#{path}/#{dir}"
+        begin
+          sftp.mkdir! path
+        rescue => e
+          raise Validic::FileTransferError, e.message unless e.code == 4
+        end
+      end
+    end
+
+    def archive!(file)
+      mkdir_p! file, :archive_dir
+      sftp.rename! file.from, file.archive
+    end
+
+    def upload!(file)
+      mkdir_p! file, :receiver_dir
+      sftp.upload! file.tmp, file.to
+    end
+
+    def download!(file)
+      sftp.download! file.from, file.tmp!
     end
 
     private
