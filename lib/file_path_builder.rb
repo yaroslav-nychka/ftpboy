@@ -10,39 +10,51 @@ module Validic
 
     def name
       until @name
-        name = filename.clone
+        name = short.clone
         name.slice!(-(format.length + 1)..-1)
         @name = name
       end
       @name
     end
 
-    def filename
-      @filename ||= file.name
+    def full
+      @full ||= file.name
+    end
+
+    def short
+      @short ||= tokens.last
+    end
+
+    def tokens
+      @tokens ||= full.split('/')
+    end
+
+    def dirs
+      tokens[0..-2]
     end
 
     def format
-      @format ||= filename.split(FORMAT_SPLITTER).last
+      @format ||= short.split(FORMAT_SPLITTER).last
     end
 
     def to
-      @to ||= "#{receiver_dir}/#{filename}"
+      @to ||= "#{receiver_dir}/#{short}"
     end
 
     def from
-      @from ||= "#{sender_dir}/#{filename}"
+      @from ||= "#{sender_dir}/#{short}"
     end
 
     def archive
-      @archive ||= "/data/history/#{archived_filename}"
+      @archive ||= "/data/history/#{archived_short}"
     end
 
-    def archived_filename
-      @archived_filename ||= "#{name}_#{Time.now.to_i}#{FORMAT_SPLITTER}#{format}"
+    def archived_short
+      @archived_short ||= "#{name}_#{Time.now.to_i}#{FORMAT_SPLITTER}#{format}"
     end
 
     def tmp
-      @tmp ||= "#{tmpdir}/#{filename}"
+      @tmp ||= "#{tmpdir}/#{short}"
     end
 
     def sender_dir

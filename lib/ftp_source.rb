@@ -50,9 +50,10 @@ module Validic
     end
 
     def setup!
-      sftp.mkdir!('/data/from') rescue nil
-      sftp.mkdir!('/data/to') rescue nil
-      sftp.mkdir!('/data/history') rescue nil
+      %w(from to history).map do |dir|
+        path = "#{Dir.pwd}/data/#{@name}/data/#{dir}"
+        FileUtils.mkdir(path) unless Dir.exists?(path)
+      end
     end
 
     def new_data?

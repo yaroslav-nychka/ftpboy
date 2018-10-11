@@ -19,8 +19,9 @@ module Validic
       source_from = sources[from]
       source_to = sources[to]
 
-      source_from.dir.glob('/data/from', '*').map do |file|
+      source_from.dir.glob('/data/from', '**/*.*').map do |file|
         path = FilePathBuilder.new(file)
+        byebug if file.name.split('/').length > 1
         # 1. Download file to temp folder
         source_from.download! path.from, path.tmp
         # 2. Upload tempfile

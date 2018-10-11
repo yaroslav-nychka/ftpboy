@@ -11,7 +11,7 @@ describe 'FTPSource' do
       port: ENV['INTUITY_FTP_PORT']
     }
   end
-  let(:subject){ Validic::FTPSource.new('intuity-test', options)}
+  let(:subject){ Validic::FTPSource.new('intuity', options)}
 
   around(:each) do |each|
     DataCleaner.clean
@@ -75,7 +75,7 @@ describe 'FTPSource' do
     end
   end
 
-  context 'new data availability' do
+  context 'new_data?' do
     before(:each) do
       subject.setup!
     end
@@ -85,8 +85,7 @@ describe 'FTPSource' do
     end
 
     it 'has 2 files' do
-      DataCreator.touch 'data/intuity/data/from/test1.txt'
-      DataCreator.touch 'data/intuity/data/from/test2.txt'
+      2.times{ |n| DataCreator.touch "data/intuity/data/from/test#{n}.txt"}
 
       expect(subject.new_data?).to eq(2)
     end

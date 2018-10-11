@@ -2,7 +2,7 @@ module DataCreator
   class << self
     def mkdir(dir, mode = nil)
       mode ||= default_mode
-      FileUtils.mkdir path(dir), mode: mode
+      FileUtils.mkdir_p path(dir), mode: mode
     end
 
     def mkdir!(dir, mode = nil)
@@ -13,11 +13,21 @@ module DataCreator
     end
 
     def touch(file)
-      FileUtils.touch "#{root_path}/#{file}"#}
+      File.new "#{root_path}/#{file}", 'w+'
+    end
+
+    def seed(path, dir)
+      build_filename = ->(n, dir){ "#{dir.slice(0..2)}_#{n}.#{dir.slice(-2..-1)}"}
+      mkdir!("#{path}/#{dir}")
+
+      dir.length.times do |n|
+        filename = build_filename.call(n, dir)
+        touch "#{path}/#{dir}/#{filename}"
+      end
     end
 
     def default_mode
-      777
+      0777
     end
 
     def path(path)
