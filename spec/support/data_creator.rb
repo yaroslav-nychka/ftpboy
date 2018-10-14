@@ -1,29 +1,29 @@
 module DataCreator
   class << self
-    def mkdir(dir, mode = nil)
-      mode ||= default_mode
-      FileUtils.mkdir_p path(dir), mode: mode
-    end
-
-    def mkdir!(dir, mode = nil)
-      return false if Dir.exists?(path(dir))
-
-      mode ||= default_mode
-      mkdir(dir, mode)
-    end
-
-    def touch(file)
-      File.new "#{root_path}/#{file}", 'w+'
+    def cd(source = nil, &block)
+      chdir = source ? source_path(source) : root_path
+      FileUtils.cd(chdir, &block)
     end
 
     def seed(path, dir)
       build_filename = ->(n, dir){ "#{dir.slice(0..2)}_#{n}.#{dir.slice(-2..-1)}"}
-      mkdir!("#{path}/#{dir}")
+      FileUtils.mkdir_p "#{path}/#{dir}" unless Dir.exist?("#{path}/#{dir}")
 
       dir.length.times do |n|
         filename = build_filename.call(n, dir)
-        touch "#{path}/#{dir}/#{filename}"
+        FileUtils.touch "#{path}/#{dir}/#{filename}"
       end
+    end
+
+    def prepare_dirs_for(source)
+      source.options['dirs'].values.map do |dir|
+        dir_path = path("data/#{source.name}/#{dir}")
+        FileUtils.mkdir_p(dir_path, mode: 0777) unless Dir.exist?(dir_path)
+      end
+    end
+
+    def source_path(source)
+      "#{root_path}/data/#{source.name}/"
     end
 
     def default_mode

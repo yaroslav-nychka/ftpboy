@@ -16,16 +16,14 @@ module Validic
     end
 
     def handle(from, to)
-      source_from = sources[from]
-      source_to = sources[to]
+      sender = sources[from]
+      receiver = sources[to]
 
-      source_from.dir.glob('/data/from', '**/*.*').map do |sftp_file|
-        file = FilePathBuilder.new(sftp_file)
-        #byebug
-        source_from.download! file                   # 1. Download file to temp folder
-        source_to.upload! file                       # 2. Upload tempfile
-        source_from.archive! file                    # 3. Move file to History folder
-        #FileUtils.rm file.tmp                       # 4. Remove tempfile
+      sender.list_files_for(:sending).map do |file|
+        sender.download! file # 1. Download file to temp folder
+        receiver.upload! file # 2. Upload tempfile
+        sender.archive! file  # 3. Move file to History folder
+        file.destroy!         # 4. Remove tempfile
       end
     end
 

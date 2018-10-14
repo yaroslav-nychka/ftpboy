@@ -33,11 +33,14 @@ describe 'FilePathBuilder' do
     expect(Dir.exists? "#{subject.tmpdir}/Employee_1/claims").to be_truthy
   end
 
-  it '#from' do
-    expect(subject.from).to eq("#{subject.sender_dir}/#{filename}")
-  end
+  it '#destroy!' do
+    DataCreator.cd do
+      FileUtils.mkdir_p 'tmp/Employee_1/claims'
+      FileUtils.touch "tmp/#{filename}"
+    end
 
-  it '#to' do
-    expect(subject.to).to eq("#{subject.receiver_dir}/#{filename}")
+    subject.destroy!
+
+    expect(File.exists?(subject.tmp)).to be_falsey
   end
 end

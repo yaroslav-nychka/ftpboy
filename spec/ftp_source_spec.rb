@@ -16,15 +16,20 @@ describe 'FTPSource' do
   let(:filename){ 'Employee_1/claims/cla_01.ms' }
   let(:file) { Validic::FilePathBuilder.new double(name: filename) }
 
-  around(:each) do |each|
+  before(:each) do
     DataCleaner.clean
-    each.run
+    DataCreator.prepare_dirs_for(subject)
+  end
+
+  after(:each) do
     DataCleaner.clean
   end
 
   context 'opendir' do
     before(:each) do
-      DataCreator.mkdir!('data/intuity/tmp/bar')
+      DataCreator.cd(subject) do
+        FileUtils.mkdir 'tmp/bar'
+      end
     end
 
     it 'has response ok' do
@@ -36,12 +41,14 @@ describe 'FTPSource' do
     it 'has response not found' do
       expect{
         subject.opendir!( '/tmp/dir404')
-      }.to raise_error(Validic::FileTransferError, /Folder not found/)
+      }.to raise_error(Validic::FileTransferError)
     end
 
 
     it 'has response forbidden' do
-      DataCreator.mkdir!('/data/intuity/tmp/secret', 644)
+      DataCreator.cd(subject) do
+        FileUtils.mkdir 'tmp/secret', mode: 0000
+      end
 
       expect{
         subject.opendir!(('/tmp/secret'))
@@ -51,34 +58,36 @@ describe 'FTPSource' do
 
   context 'upload' do
     it 'uploads file saving folder structure' do
-      DataCreator.mkdir 'tmp/Employee_1/claims'
-      DataCreator.touch 'tmp/' + filename
-
+      DataCreator.cd do
+        FileUtils.mkdir_p 'tmp/Employee_1/claims'
+        FileUtils.touch 'tmp/' + filename
+      end
       subject.upload! file
 
-      expect(subject.dir.glob('/data/to', '**/*.*').map(&:name)).to match_array([filename])
-    end
-  end
-
-  context 'setup' do
-    before(:each) do
-      subject.setup!
-    end
-
-    it 'has correct schema' do
-      files = subject.dir.glob('/data', '*')
-      expect(files.map(&:name)).to match_array(%w(to from history))
+      expect(subject.list_files_for(:receiving).map(&:full)).to match_array([filename])
     end
   end
 
   context 'download' do
     it 'downloads file to tmp' do
-      DataCreator.mkdir("data/intuity/data/from/Employee_1/claims")
-      DataCreator.touch("data/intuity/data/from/#{filename}")
-
+      DataCreator.cd(subject) do#
+        FileUtils.mkdir_p "#{subject.dir(:sending)}/Employee_1/claims"
+        FileUtils.touch "#{subject.dir(:sending)}/#{filename}"
+      end
       subject.download! file
 
-      expect(File.exists?"#{Dir.pwd}/tmp/#{filename}").to be_truthy
+      expect(File.exist?("#{Dir.pwd}/tmp/#{filename}")).to be_truthy
+    end
+  end
+
+  context 'list_files_for' do
+    it ':sending' do
+      DataCreator.cd subject do
+        DataCreator.seed "#{subject.dir(:sending)}/Employee_1", 'hra'
+      end
+      files = subject.list_files_for(:sending)
+
+      expect(files.length).to eq(3)
     end
   end
 end

@@ -2,18 +2,14 @@ require_relative '../lib/ftp_source'
 require_relative '../lib/ftp_dispatcher'
 
 describe 'FTPDispatcher' do
-
   let(:subject){ Validic::FTPDispatcher.new }
   let(:intervent){ subject.sources[:intervent] }
   let(:intuity){ subject.sources[:intuity] }
 
-  let(:intervent_data_path){ Dir.pwd + '/data/intervent/data'}
-  let(:intuity_data_path){ Dir.pwd + '/data/intuity/data/'}
-
   before(:each) do
     DataCleaner.clean
-    intervent.setup!
-    intuity.setup!
+    DataCreator.prepare_dirs_for(intervent)
+    DataCreator.prepare_dirs_for(intuity)
   end
 
   after(:each) do
@@ -22,27 +18,31 @@ describe 'FTPDispatcher' do
 
   context 'handle' do
     it 'transfers successfully files from one ftp to another' do
-      3.times{ |n| DataCreator.touch "data/intervent/data/from/test_#{n}.txt" }
+      DataCreator.cd(intervent) do
+        3.times{|n| FileUtils.touch "#{intervent.dir(:sending)}/test_#{n}.txt"}
+      end
 
       subject.handle :intervent, :intuity
 
-      expect(intervent.dir.glob('/data/from', '*').length).to eq(0)
-      expect(intervent.dir.glob('/data/history', '*').length).to eq(3)
-      expect(intuity.dir.glob('/data/to', '*').length).to eq(3)
+      expect(intervent.list_files_for(:sending).length).to eq(0)
+      expect(intervent.list_files_for(:archiving).length).to eq(3)
+      expect(intuity.list_files_for(:receiving).length).to eq(3)
     end
 
     it 'transfers files saving folder structure' do
       dirs = %w[claims eligibilities hra]
       seeds = dirs.join('').length
-      dirs.map do |dir|
-        DataCreator.seed("data/intervent/data/from/Employee_1", dir)
+      DataCreator.cd(intervent) do
+        dirs.map do |dir|
+          DataCreator.seed("#{intervent.dir(:sending)}/Employee_1", dir)
+        end
       end
 
       subject.handle :intervent, :intuity
 
-      expect(intervent.dir.glob('/data/from/', '**/*.*').length).to eq(0)
-      expect(intervent.dir.glob('/data/history/', '**/*.*').length).to eq(22)
-      expect(intuity.dir.glob('/data/to/', '**/*.*').length).to eq(22)
+      expect(intervent.list_files_for(:sending).length).to eq(0)
+      expect(intervent.list_files_for(:archiving).length).to eq(seeds)
+      expect(intuity.list_files_for(:receiving).length).to eq(seeds)
     end
   end
 end

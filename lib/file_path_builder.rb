@@ -37,14 +37,6 @@ module Validic
       @format ||= short.split(FORMAT_SPLITTER).last
     end
 
-    def to
-      @to ||= "#{receiver_dir}/#{full}"
-    end
-
-    def from
-      @from ||= "#{sender_dir}/#{full}"
-    end
-
     def archive
       @archive ||= "#{archive_dir}/#{dirs.join('/')}/#{archived_short}"
     end
@@ -63,16 +55,12 @@ module Validic
       tmp
     end
 
+    def destroy!
+      FileUtils.rm(tmp) if File.exists? tmp
+    end
+
     def archive_dir
       @archive_dir ||= '/data/history'
-    end
-
-    def sender_dir
-      @sender_dir ||= '/data/from'
-    end
-
-    def receiver_dir
-      @receiver_dir ||= '/data/to'
     end
 
     def tmpdir
