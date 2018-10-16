@@ -1,7 +1,6 @@
 .idea
 .idea/*
 .env
-/log
+/log/*.log
 /tmp/*
-/data
 .byebug_history
