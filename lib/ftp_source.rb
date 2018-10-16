@@ -3,6 +3,7 @@ require 'byebug'
 require_relative '../lib/file_path_builder'
 require_relative '../lib/file_logger'
 require_relative '../lib/settings'
+require_relative '../lib/errors/errors'
 
 module Validic
   class FileTransferError < StandardError
@@ -91,10 +92,10 @@ module Validic
         logger.error(e.message)
         if e.code == 4
           raise FileTransferError, "Operation #{caller} failed"
-        elsif e.code == 2
-          raise FileTransferError, "Operation failed on #{caller}"
-        elsif e.code == 3
-          raise FileTransferError, "Permission denied to dir"
+        elsif e.code == 2 && caller == 'opendir!'
+          raise DirNotFoundError, "Operation failed on #{caller}"
+        elsif e.code == 3 && caller === 'opendir!'
+          raise DirAccessDeniedError, "Permission denied to dir"
         else
           raise FileTransferError, "Unknown error #{e.code} - #{e.message}"
         end

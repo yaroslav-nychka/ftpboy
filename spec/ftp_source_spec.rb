@@ -1,5 +1,6 @@
 require_relative '../lib/ftp_source'
 require_relative '../lib/file_path_builder'
+require_relative '../lib/errors/errors'
 
 describe 'FTPSource' do
 
@@ -26,33 +27,31 @@ describe 'FTPSource' do
   end
 
   context 'opendir' do
-    before(:each) do
+    it 'has response ok' do
       DataCreator.cd(subject) do
         FileUtils.mkdir 'tmp/bar'
       end
-    end
 
-    it 'has response ok' do
       subject.opendir!('/tmp/bar') do |response|
         expect(response.ok?).to be_truthy
       end
     end
 
-    it 'has response not found' do
+    it 'raises DirNotFoundError' do
       expect{
         subject.opendir!( '/tmp/dir404')
-      }.to raise_error(Validic::FileTransferError)
+      }.to raise_error(Validic::DirNotFoundError)
     end
 
 
-    it 'has response forbidden' do
+    it 'raises DirAccessDeniedError' do
       DataCreator.cd(subject) do
         FileUtils.mkdir 'tmp/secret', mode: 0000
       end
 
       expect{
         subject.opendir!(('/tmp/secret'))
-      }.to raise_error(Validic::FileTransferError, /Permission denied to dir/)
+      }.to raise_error(Validic::DirAccessDeniedError)
     end
   end
 
