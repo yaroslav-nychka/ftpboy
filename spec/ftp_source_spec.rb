@@ -86,7 +86,7 @@ describe 'FTPSource' do
       }.to raise_error(Validic::DirAccessDeniedError)
     end
 
-    it 'raises InvalidPathError' do
+    it 'raises DirNotFoundError' do
       DataCreator.cd do
         FileUtils.mkdir_p 'tmp/Employee_1/claims'
         FileUtils.touch 'tmp/' + filename
@@ -97,13 +97,13 @@ describe 'FTPSource' do
 
       expect{
         subject.upload! file
-      }.to raise_error(Validic::InvalidPathError)
+      }.to raise_error(Validic::DirNotFoundError)
     end
   end
 
   context 'download' do
     it 'downloads file to tmp' do
-      DataCreator.cd(subject) do#
+      DataCreator.cd(subject) do
         FileUtils.mkdir_p "#{subject.dir(:sending)}/Employee_1/claims"
         FileUtils.touch "#{subject.dir(:sending)}/#{filename}"
       end

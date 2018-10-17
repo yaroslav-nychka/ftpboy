@@ -9,11 +9,11 @@ default: &default
         message: <%= 'operation opendir! failed - forbidden! '%>
     upload!:
       2:
-        error: 'Validic::InvalidPathError'
-        message: <%= 'operation upload! failed - invalid path'%>
+        error: 'Validic::DirNotFoundError'
+        message: <%= 'operation upload! failed - invalid path' %>
       3:
         error: 'Validic::DirAccessDeniedError'
-        message: <%= 'operation upload! failed - access denied'%>
+        message: <%= 'operation upload! failed - access denied' %>
   ftp_sources:
     intervent:
       host: <%= ENV.fetch('INTERVENT_FTP_HOST', 'localhost') %>
