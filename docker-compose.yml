@@ -14,3 +14,6 @@ intervent:
     ports:
         - "8888:22"
     command: intervent:pass:1001
+intervent_ftp:
+  build: .
+  command: "????"

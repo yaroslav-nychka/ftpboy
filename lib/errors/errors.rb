@@ -1,5 +1,5 @@
 module Validic
-  class DirAccessDeniedError < StandardError
+  class AccessDeniedError < StandardError
   end
 
   class DirNotFoundError < StandardError

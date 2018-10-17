@@ -2,10 +2,13 @@ require_relative '../lib/file_path_builder'
 
 describe 'FilePathBuilder' do
   let(:filename){ 'Employee_1/claims/cla_01.ms' }
-  let(:subject){ Validic::FilePathBuilder.new double(name: filename)}
 
-  it '#format' do
-    expect(subject.format).to eq('ms')
+  subject { Validic::FilePathBuilder.new double(name: filename) }
+
+  describe '#extension' do
+    it "returns file extension" do
+      expect(subject.format).to eq('ms')
+    end
   end
 
   it '#name' do

@@ -10,43 +10,45 @@ module Validic
 
     def name
       until @name
-        name = short.clone
-        name.slice!(-(format.length + 1)..-1)
+        name = basename.clone
+        name.slice!(-(extension.length + 1)..-1)
         @name = name
       end
       @name
     end
 
-    def full
-      @full ||= file.name
+    def path
+      @path ||= file.name
     end
 
-    def short
-      @short ||= tokens.last
+    def basename
+      @basename ||= tokens.last
     end
 
+    # private
     def tokens
-      @tokens ||= full.split('/')
+      @tokens ||= path.split('/')
     end
 
     def dirs
       tokens[0..-2]
     end
 
-    def format
-      @format ||= short.split(FORMAT_SPLITTER).last
+    def extension
+      # File.basename(basename, ".*")
+      @extension ||= basename.split(FORMAT_SPLITTER).last
     end
 
     def archive
-      @archive ||= "#{archive_dir}/#{dirs.join('/')}/#{archived_short}"
+      @archive ||= "#{archive_dir}/#{dirs.join('/')}/#{archived_basename}"
     end
 
-    def archived_short
-      @archived_short ||= "#{name}_#{Time.now.to_i}#{FORMAT_SPLITTER}#{format}"
+    def archived_basename
+      @archived_basename ||= "#{name}_#{Time.now.to_i}#{FORMAT_SPLITTER}#{extension}"
     end
 
     def tmp
-      @tmp ||= "#{tmpdir}/#{full}"
+      @tmp ||= "#{tmpdir}/#{path}"
     end
 
     def tmp!

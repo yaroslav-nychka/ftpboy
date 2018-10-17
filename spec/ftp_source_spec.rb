@@ -26,32 +26,36 @@ describe 'FTPSource' do
     DataCleaner.clean
   end
 
-  context 'opendir' do
-    it 'is ok' do
-      DataCreator.cd(subject) do
-        FileUtils.mkdir 'tmp/bar'
-      end
+  describe '#opendir' do
+    context "success" do
+      it 'is ok' do
+        DataCreator.cd(subject) do
+          FileUtils.mkdir 'tmp/bar'
+        end
 
-      subject.opendir!('/tmp/bar') do |response|
-        expect(response.ok?).to be_truthy
+        subject.opendir!('/tmp/bar') do |response|
+          expect(response.ok?).to be_truthy
+        end
       end
     end
 
-    it 'raises DirNotFoundError' do
-      expect{
-        subject.opendir!( '/tmp/dir404')
-      }.to raise_error(Validic::DirNotFoundError)
-    end
-
-
-    it 'raises DirAccessDeniedError' do
-      DataCreator.cd(subject) do
-        FileUtils.mkdir 'tmp/secret', mode: 0000
+    context "failure" do
+      it 'raises DirNotFoundError' do
+        expect{
+          subject.opendir!( '/tmp/dir404')
+        }.to raise_error(Validic::DirNotFoundError)
       end
 
-      expect{
-        subject.opendir!(('/tmp/secret'))
-      }.to raise_error(Validic::DirAccessDeniedError)
+
+      it 'raises DirAccessDeniedError' do
+        DataCreator.cd(subject) do
+          FileUtils.mkdir 'tmp/secret', mode: 0000
+        end
+
+        expect{
+          subject.opendir!(('/tmp/secret'))
+        }.to raise_error(Validic::DirAccessDeniedError)
+      end
     end
   end
 

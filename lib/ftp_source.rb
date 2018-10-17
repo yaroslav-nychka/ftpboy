@@ -20,7 +20,7 @@ module Validic
       @name = name
       @logger = FileLogger.new(progname: name)
       @sftp = Net::SFTP.start(options[:host], options[:username], password: options[:password], port: options[:port])
-      @options = settings['ftp_sources'][name.to_s]
+      @options = settings.fetch('ftp_sources').fetch(name.to_s)
     end
 
     def mkdir_p!(file, path)
