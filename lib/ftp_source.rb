@@ -45,8 +45,8 @@ module Validic
 
     def upload!(file)
       mkdir_p! file, options['dirs']['receiving']
-      handle("upload! #{file.full}") do
-        raise Validic::FileTransferError, 'File not found' unless File.exists? file.tmp
+      handle("upload!") do
+        raise Validic::FileNotFoundError, 'File not found' unless File.exists? file.tmp
 
         sftp.upload! file.tmp, to(file)
       end
@@ -86,20 +86,14 @@ module Validic
     end
 
     def handle(caller, *args)
-      begin
         yield
       rescue Net::SFTP::StatusException => e
         logger.error(e.message)
-        if e.code == 4
-          raise FileTransferError, "Operation #{caller} failed"
-        elsif e.code == 2 && caller == 'opendir!'
-          raise DirNotFoundError, "Operation failed on #{caller}"
-        elsif e.code == 3 && caller === 'opendir!'
-          raise DirAccessDeniedError, "Permission denied to dir"
-        else
-          raise FileTransferError, "Unknown error #{e.code} - #{e.message}"
-        end
-      end
+        errors = settings['errors']
+        #byebug
+        raise FileTransferError, "#{e.code} - #{e.message}" unless errors.key?(caller)
+        raise FileTransferError, "#{e.code} - #{e.message}" unless errors[caller].key?(e.code)
+        raise Kernel.const_get(errors[caller][e.code]['error']), errors[caller][e.code]['message']
     end
   end
 end

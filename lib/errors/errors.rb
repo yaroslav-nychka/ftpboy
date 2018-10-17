@@ -5,6 +5,12 @@ module Validic
   class DirNotFoundError < StandardError
   end
 
+  class FileNotFoundError < StandardError
+  end
+
+  class InvalidPathError < StandardError
+  end
+
   class ConnectionError < StandardError
   end
 end

@@ -27,7 +27,7 @@ describe 'FTPSource' do
   end
 
   context 'opendir' do
-    it 'has response ok' do
+    it 'is ok' do
       DataCreator.cd(subject) do
         FileUtils.mkdir 'tmp/bar'
       end
@@ -64,6 +64,40 @@ describe 'FTPSource' do
       subject.upload! file
 
       expect(subject.list_files_for(:receiving).map(&:full)).to match_array([filename])
+    end
+
+    it 'raises FileNotFoundError' do
+      expect{
+        subject.upload! file
+      }.to raise_error(Validic::FileNotFoundError)
+    end
+
+    it 'raises DirAccessDeniedError' do
+      DataCreator.cd do
+        FileUtils.mkdir_p 'tmp/Employee_1/claims'
+        FileUtils.touch 'tmp/' + filename
+      end
+      DataCreator.cd(subject) do
+        FileUtils.chmod 0000, subject.dir(:receiving)
+      end
+
+      expect{
+        subject.upload! file
+      }.to raise_error(Validic::DirAccessDeniedError)
+    end
+
+    it 'raises InvalidPathError' do
+      DataCreator.cd do
+        FileUtils.mkdir_p 'tmp/Employee_1/claims'
+        FileUtils.touch 'tmp/' + filename
+      end
+      DataCreator.cd(subject) do
+        FileUtils.rm_r subject.dir(:receiving)
+      end
+
+      expect{
+        subject.upload! file
+      }.to raise_error(Validic::InvalidPathError)
     end
   end
 
