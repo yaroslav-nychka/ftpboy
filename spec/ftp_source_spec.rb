@@ -114,13 +114,22 @@ describe 'FTPSource' do
   end
 
   context 'list_files_for' do
-    it ':sending' do
+    it 'is ok' do
       DataCreator.cd subject do
         DataCreator.seed "#{subject.dir(:sending)}/Employee_1", 'hra'
       end
       files = subject.list_files_for(:sending)
 
       expect(files.length).to eq(3)
+    end
+
+    it 'raises DirNotFoundError' do
+      DataCreator.cd(subject) do
+        FileUtils.rm_r subject.dir(:archiving)
+      end
+      expect{
+        subject.list_files_for(:archiving)
+      }.to raise_error(Validic::DirNotFoundError)
     end
   end
 end

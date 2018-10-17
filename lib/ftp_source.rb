@@ -69,7 +69,9 @@ module Validic
     def list_files_for(operation, pattern = nil)
       pattern ||= '**/*.*'
       path = '/' + dir(operation)
-      sftp.dir.glob(path, pattern).map{ |sftp_file| FilePathBuilder.new(sftp_file)}
+      handle 'glob' do
+        sftp.dir.glob(path, pattern).map{ |sftp_file| FilePathBuilder.new(sftp_file)}
+      end
     end
 
     private

@@ -14,6 +14,10 @@ default: &default
       3:
         error: 'Validic::DirAccessDeniedError'
         message: <%= 'operation upload! failed - access denied' %>
+    glob:
+      2:
+        error: 'Validic::DirNotFoundError'
+        message: <%= 'operation list_for_files failed - dir not exists' %>
   ftp_sources:
     intervent:
       host: <%= ENV.fetch('INTERVENT_FTP_HOST', 'localhost') %>
