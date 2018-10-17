@@ -1,8 +1,8 @@
-require_relative '../lib/ftp_source'
-require_relative '../lib/file_path_builder'
+require_relative '../lib/source'
+require_relative '../lib/file_decorator'
 require_relative '../lib/errors/errors'
 
-describe 'FTPSource' do
+describe 'Source' do
 
   let(:today){ DateTime.now.strftime('%d/%m/%Y') }
   let(:options) do
@@ -13,9 +13,9 @@ describe 'FTPSource' do
       port: ENV['INTUITY_FTP_PORT']
     }
   end
-  let(:subject){ Validic::FTPSource.new('intuity', options)}
-  let(:filename){ 'Employee_1/claims/cla_01.ms' }
-  let(:file) { Validic::FilePathBuilder.new double(name: filename) }
+  subject{ InterventFTP::Source.new('intuity', options)}
+  let(:filename){ 'Employee_1/claims/cla_' + Random.rand(10000).to_s + '.ms' }
+  let(:file) { InterventFTP::FileDecorator.new double(name: filename) }
 
   before(:each) do
     DataCleaner.clean
@@ -37,21 +37,21 @@ describe 'FTPSource' do
       end
     end
 
-    it 'raises DirNotFoundError' do
+    it 'raises NotFoundError' do
       expect{
         subject.opendir!( '/tmp/dir404')
-      }.to raise_error(Validic::DirNotFoundError)
+      }.to raise_error(InterventFTP::NotFoundError)
     end
 
 
-    it 'raises DirAccessDeniedError' do
+    it 'raises AccessDeniedError' do
       DataCreator.cd(subject) do
         FileUtils.mkdir 'tmp/secret', mode: 0000
       end
 
       expect{
         subject.opendir!(('/tmp/secret'))
-      }.to raise_error(Validic::DirAccessDeniedError)
+      }.to raise_error(InterventFTP::AccessDeniedError)
     end
   end
 
@@ -62,17 +62,18 @@ describe 'FTPSource' do
         FileUtils.touch 'tmp/' + filename
       end
       subject.upload! file
+      sleep(0.1)
 
-      expect(subject.list_files_for(:receiving).map(&:full)).to match_array([filename])
+      expect(subject.list_files_for(:receiving).map(&:path)).to match_array([filename])
     end
 
-    it 'raises FileNotFoundError' do
+    it 'raises NotFoundError' do
       expect{
         subject.upload! file
-      }.to raise_error(Validic::FileNotFoundError)
+      }.to raise_error(InterventFTP::NotFoundError)
     end
 
-    it 'raises DirAccessDeniedError' do
+    it 'raises AccessDeniedError' do
       DataCreator.cd do
         FileUtils.mkdir_p 'tmp/Employee_1/claims'
         FileUtils.touch 'tmp/' + filename
@@ -83,10 +84,10 @@ describe 'FTPSource' do
 
       expect{
         subject.upload! file
-      }.to raise_error(Validic::DirAccessDeniedError)
+      }.to raise_error(InterventFTP::AccessDeniedError)
     end
 
-    it 'raises DirNotFoundError' do
+    it 'raises NotFoundError' do
       DataCreator.cd do
         FileUtils.mkdir_p 'tmp/Employee_1/claims'
         FileUtils.touch 'tmp/' + filename
@@ -97,7 +98,7 @@ describe 'FTPSource' do
 
       expect{
         subject.upload! file
-      }.to raise_error(Validic::DirNotFoundError)
+      }.to raise_error(InterventFTP::NotFoundError)
     end
   end
 
@@ -111,6 +112,16 @@ describe 'FTPSource' do
 
       expect(File.exist?("#{Dir.pwd}/tmp/#{filename}")).to be_truthy
     end
+
+    it 'raises NotFoundError' do
+      DataCreator.cd(subject) do
+        FileUtils.mkdir_p "#{subject.dir(:sending)}/Employee_1/claims"
+      end
+
+      expect{
+        subject.download! file
+      }.to raise_error(InterventFTP::NotFoundError)
+    end
   end
 
   context 'list_files_for' do
@@ -123,13 +134,13 @@ describe 'FTPSource' do
       expect(files.length).to eq(3)
     end
 
-    it 'raises DirNotFoundError' do
+    it 'raises NotFoundError' do
       DataCreator.cd(subject) do
         FileUtils.rm_r subject.dir(:archiving)
       end
       expect{
         subject.list_files_for(:archiving)
-      }.to raise_error(Validic::DirNotFoundError)
+      }.to raise_error(InterventFTP::NotFoundError)
     end
   end
 end

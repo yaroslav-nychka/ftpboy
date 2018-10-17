@@ -1,16 +1,10 @@
-module Validic
-  class DirAccessDeniedError < StandardError
+module InterventFTP
+  class AccessDeniedError < StandardError
   end
 
-  class DirNotFoundError < StandardError
+  class NotFoundError < StandardError
   end
 
   class FileNotFoundError < StandardError
-  end
-
-  class InvalidPathError < StandardError
-  end
-
-  class ConnectionError < StandardError
   end
 end

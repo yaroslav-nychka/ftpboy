@@ -1,13 +1,13 @@
 require 'sidekiq'
 
-require_relative 'ftp_dispatcher'
+require_relative 'dispatcher'
 
-module Validic
+module InterventFTP
   class Worker
     include Sidekiq::Worker
 
     def perform
-      dispatcher = FTPDispatcher.new
+      dispatcher = Dispatcher.new
       dispatcher.handle(:intervent, :intuity)
       dispatcher.handle(:intuity, :intervent)
     end

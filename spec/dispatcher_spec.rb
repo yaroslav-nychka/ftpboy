@@ -1,8 +1,7 @@
-require_relative '../lib/ftp_source'
-require_relative '../lib/ftp_dispatcher'
+require_relative '../lib/source'
+require_relative '../lib/dispatcher'
 
-describe 'FTPDispatcher' do
-  let(:subject){ Validic::FTPDispatcher.new }
+describe InterventFTP::Dispatcher do
   let(:intervent){ subject.sources[:intervent] }
   let(:intuity){ subject.sources[:intuity] }
 

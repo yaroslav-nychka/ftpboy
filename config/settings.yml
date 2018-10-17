@@ -1,22 +1,33 @@
 default: &default
+  dirs:
+    local:
+      tmp: 'tmp'
+    remote:
+      sending: 'data/from'
+      receiving: 'data/to'
+      archiving: 'data/history'
   errors:
     opendir!:
       2:
-        error: 'Validic::DirNotFoundError'
+        error: 'InterventFTP::NotFoundError'
         message: <%= 'operation opendir! failed - dir not found! '%>
       3:
-        error: 'Validic::DirAccessDeniedError'
+        error: 'InterventFTP::AccessDeniedError'
         message: <%= 'operation opendir! failed - forbidden! '%>
     upload!:
       2:
-        error: 'Validic::DirNotFoundError'
+        error: 'InterventFTP::NotFoundError'
         message: <%= 'operation upload! failed - invalid path' %>
       3:
-        error: 'Validic::DirAccessDeniedError'
+        error: 'InterventFTP::AccessDeniedError'
         message: <%= 'operation upload! failed - access denied' %>
-    glob:
+    download!:
       2:
-        error: 'Validic::DirNotFoundError'
+        error: 'InterventFTP::NotFoundError'
+        message: <%= 'operation download! failed - remote file not found' %>
+    list_files_for:
+      2:
+        error: 'InterventFTP::NotFoundError'
         message: <%= 'operation list_for_files failed - dir not exists' %>
   ftp_sources:
     intervent:
@@ -24,19 +35,11 @@ default: &default
       username: <%= ENV.fetch('INTERVENT_FTP_USER', 'intervent') %>
       password: <%= ENV.fetch('INTERVENT_FTP_PASSWORD', 'pass') %>
       port: <%= ENV.fetch('INTERVENT_FTP_PORT', '8888') %>
-      dirs:
-        sending: 'data/from'
-        receiving: 'data/to'
-        archiving: 'data/history'
     intuity:
       host: <%= ENV.fetch('INTUITY_FTP_HOST', 'localhost') %>
       username: <%= ENV.fetch('INTUITY_FTP_USER', 'intuity') %>
       password: <%= ENV.fetch('INTUITY_FTP_PASSWORD', 'pass') %>
       port: <%= ENV.fetch('INTUITY_FTP_PORT', '7777') %>
-      dirs:
-        sending: 'data/from'
-        receiving: 'data/to'
-        archiving: 'data/history'
 
 staging:
   <<: *default

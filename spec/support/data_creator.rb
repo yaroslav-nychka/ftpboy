@@ -16,7 +16,7 @@ module DataCreator
     end
 
     def prepare_dirs_for(source)
-      source.options['dirs'].values.map do |dir|
+      source.settings['dirs']['remote'].values.map do |dir|
         dir_path = path("data/#{source.name}/#{dir}")
         FileUtils.mkdir_p(dir_path, mode: 0777) unless Dir.exist?(dir_path)
       end

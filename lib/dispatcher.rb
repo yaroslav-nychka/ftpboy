@@ -1,10 +1,10 @@
-require_relative 'ftp_source'
-require_relative 'file_path_builder'
+require_relative 'source'
+require_relative 'file_decorator'
 require_relative 'settings'
 
-module Validic
-  class FTPDispatcher
-    include Configurable
+module InterventFTP
+  class Dispatcher
+    include Settings
     attr_reader :sources
 
     def initialize
@@ -28,7 +28,7 @@ module Validic
     end
 
     def register_source(name, options)
-      sources[name.to_sym] = FTPSource.new(name, host: options['host'], username: options['username'], password: options['password'], port: options['port'])
+      sources[name.to_sym] = Source.new(name, host: options['host'], username: options['username'], password: options['password'], port: options['port'])
     end
   end
 end
