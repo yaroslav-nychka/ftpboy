@@ -1,4 +1,4 @@
-require 'writer'
+require 'logger'
 require 'date'
 
 module InterventFTP

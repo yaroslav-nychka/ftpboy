@@ -1,0 +1,4 @@
+:schedule:
+  worker:
+    every: <%= ENV.fetch('SIDEKIQ_SCHEDULE', '1h') %>
+    class: InterventFTP::Worker

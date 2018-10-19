@@ -1,5 +1,5 @@
 require 'sidekiq'
-
+require 'sidekiq-scheduler'
 require_relative 'dispatcher'
 
 module InterventFTP
