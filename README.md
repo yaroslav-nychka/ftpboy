@@ -1,19 +1,30 @@
-Setup
+Sidekiq worker for transferring files between 2 FTP servers
 
-1. Prepare FTP servers for testing
+QUICK START:
 
-``$ docker-compose up``
-``$ sftp ituity@localhost -P 7777``
-``$ sftp itervent@localhost -P 8888``
+ - Install & run docker:
+``https://www.docker.com/get-started``
 
-2. Run tests
+ - Run tests
+    -  ``$ docker-compose -f docker-compose.test.yml``
+    -  ``$ rspec``
 
-``$ rspec``
+HOW IT WORKS:
+ 
+1. Run two FTP servers in docker containers
+``$ docker-compose -f docker-compose.test.yml``
 
-3. Run worker
+2. Create test file for transferring from one FTP server to another:
+``$ touch ./data/intervent/data/from/test_1.txt``
 
+3. Run Sidekiq scheduled worker
 ``$ bundle exec sidekiq -r ./lib/worker.rb``
 
-4. Run sidekiq Web UI
-
+4. Open Sidekiq UI to see processed and failed jobs
 ``$ rackup``
+
+5. After processing job file should be:
+ - transferred to ``./data/intuity/data/to/test_1.txt`` 
+ - moved to ``./data/intervent/data/history/test_1.txt``
+
+
