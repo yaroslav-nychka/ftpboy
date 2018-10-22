@@ -14,7 +14,7 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 require 'dotenv'
-Dotenv.load '.env'
+Dotenv.load '.env.test'
 Dir["#{Dir.pwd}/spec/support/**/*.rb"].each { |file| require file }
 
 RSpec.configure do |config|
