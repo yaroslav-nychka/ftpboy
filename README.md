@@ -8,6 +8,12 @@ QUICK START:
  - Run tests
     -  ``$ docker-compose -f docker-compose.test.yml``
     -  ``$ rspec``
+    
+ - Run worker
+ ``$ docker-compose -f docker-compose.local.yml up``
+ 
+ - Open Sidekiq UI to see processed and failed jobs
+ ``$ rackup``
 
 HOW IT WORKS:
  
@@ -19,9 +25,6 @@ HOW IT WORKS:
 
 3. Run Sidekiq scheduled worker
 ``$ bundle exec sidekiq -r ./lib/worker.rb``
-
-4. Open Sidekiq UI to see processed and failed jobs
-``$ rackup``
 
 5. After processing job file should be:
  - transferred to ``./data/intuity/data/to/test_1.txt`` 
